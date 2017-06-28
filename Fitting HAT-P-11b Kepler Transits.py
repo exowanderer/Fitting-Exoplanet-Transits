@@ -20,7 +20,7 @@ def generate_fake_transit_data(period, tcenter, inc, aprs, rprs, ecc, omega, u1,
                        times, ldtype='quadratic', transitType='primary')
   
   if noiseLevel is None:
-    noiseLevel = 1e-1
+    noiseLevel = 1e-4
    
   noisyData = np.random.normal(cleanModel, noiseLevel)
   dataError = np.random.normal(noiseLevel, 1e-2*noiseLevel)
