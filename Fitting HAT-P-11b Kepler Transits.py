@@ -1,5 +1,6 @@
 import numpy as np
 import batman
+from scipy.optimize import minimize as optmin
 
 # Values from Huber et al 2017 -- Discovered Eclipse of HAT-P-11 inside Kepler Data
 h11Per       = 4.88782433
