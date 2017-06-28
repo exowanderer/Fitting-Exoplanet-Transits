@@ -72,15 +72,15 @@ def batman_wrapper_lmfit(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p
 
     return m_eclipse.light_curve(bm_params) * out_of_transit
 
-def loglikehood(params, uni_prior, times, flux, fluxerr, regularization=None):
+def loglikehood(params, uni_prior, times, flux, fluxerr, regularization=None, lam=0.5):
     model = batman_wrapper_mle(params, times)
     chisq = ((flux - model)/fluxerr)**2.
     if regularization is None:
-        return -0.5*chisq.sum() # + lambda*abs(params).sum() # + lambda*np.sqrt((params**2).sum())
+        return -0.5*chisq.sum()
     elif regularization == 'Ridge':
-        return -0.5*chisq.sum() + lambda*np.sqrt((params**2).sum())
+        return -0.5*chisq.sum() + lam*np.sqrt((params**2).sum())
     elif regularization = 'LASSO':
-        return -0.5*chisq.sum() + lambda*abs(params).sum()
+        return -0.5*chisq.sum() + lam*abs(params).sum()
 
 def logPrior(params, uni_prior, times, flux, fluxerr):
     for kp, (lower, upper) in enumerate(uni_prior):
