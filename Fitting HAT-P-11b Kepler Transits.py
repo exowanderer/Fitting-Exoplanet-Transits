@@ -89,7 +89,7 @@ def loglikehood(params, uni_prior, times, flux, fluxerr, regularization=None, la
 
 def logPrior(params, uni_prior, times, flux, fluxerr):
     for kp, (lower, upper) in enumerate(uni_prior):
-        if params[kp] < lower or params[k] > upper:
+        if params[kp] < lower or params[kp] > upper:
             return -np.inf
         return 0.0
 
@@ -151,7 +151,7 @@ data, derr = generate_fake_transit_data(h11Per, h11t0, h11Inc, h11ApRs, h11RpRs,
 
 res = optmin(neg_logprobability, initParams, args=(uniPrior, tSim, data, derr))
 
-print(res.x - initParams) # it seems that the prior is overachieving -- maybe set the wrong init conditions
+print(res.x - initParams)
 
 ## FIRST TRY at LMFIT
 
