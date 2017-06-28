@@ -10,8 +10,13 @@ h11u2        = 0.048
 
 def batman_wrapper_raw(init_params, times, ldtype='quadratic', transitType='primary'):
 
-    period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2 = init_params
-
+    period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2 = init_params
+    
+    if p0 == 1.0 and p1 == 0.0 and p2 == 0.0:
+        out_of_transit = 1.0
+    else:
+        out_of_transit = p0 + p1*(times - times.mean()) + p2*(times - times.mean())**2.
+    
     bm_params           = batman.TransitParams() # object to store transit parameters
 
     bm_params.per       = period  # orbital period
@@ -26,12 +31,17 @@ def batman_wrapper_raw(init_params, times, ldtype='quadratic', transitType='prim
 
     m_eclipse = batman.TransitModel(bm_params, times, transittype=transitType)    # initializes model
 
-    return m_eclipse.light_curve(bm_params)
+    return m_eclipse.light_curve(bm_params) * out_of_transit
 
-def loglikehood(params, uni_prior, times, flux, fluxerr):
+def loglikehood(params, uni_prior, times, flux, fluxerr, regularization=None):
     model = batman_wrapper_raw(params, times)
     chisq = ((flux - model)/fluxerr)**2.
-    return -0.5*chisq.sum() # + lambda*abs(params).sum() # + lambda*np.sqrt((params**2).sum())
+    if regularization is None:
+        return -0.5*chisq.sum() # + lambda*abs(params).sum() # + lambda*np.sqrt((params**2).sum())
+    elif regularization == 'Ridge':
+        return -0.5*chisq.sum() + lambda*np.sqrt((params**2).sum())
+    elif regularization = 'LASSO':
+        return -0.5*chisq.sum() + lambda*abs(params).sum()
 
 def logPrior(params, uni_prior, times, flux, fluxerr):
     for kp, (lower, upper) in enumerate(uni_prior):
@@ -56,6 +66,9 @@ eccIn       = h11Ecc
 omegaIn     = h11Omega
 u1In        = h11u1
 u2In        = h11u2
+offset      = 1.0
+slope       = 0.0
+quadterm    = 0.0
 
 # Initial Parameters
 initParams = [periodIn, tcenterIn, incIn, aprsIn, rprsIn, eccIn, omegaIn, u1In, u2In]
