@@ -177,7 +177,7 @@ fitResult = lc.fit(data,
                    ldtype='quadratic',
                    transitType='primary',
                    params=p,
-                   weights=derr**(-2)
+                   weights=derr**(-2),
                    method='powell')
 
 print(fitResult)
