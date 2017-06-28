@@ -8,9 +8,10 @@ h11Omega     = 360-162.149
 h11u1        = 0.646
 h11u2        = 0.048
 
-def batman_wrapper_raw(init_params, times, ldtype='quadratic', transitType='primary'):
+def batman_wrapper_raw(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2, 
+                       times, ldtype='quadratic', transitType='primary'):
 
-    period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2 = init_params
+    # period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2 = params
     
     if p0 == 1.0 and p1 == 0.0 and p2 == 0.0:
         out_of_transit = 1.0
@@ -100,5 +101,40 @@ uniPrior = np.array([
            ])
 
 res = optmin(neg_logprobability, initParams, args=(uniPrior, timeSlice3, fluxSlice3, ferrSlice3))
+print(res.x - initParams) # it seems that the prior is overachieving -- maybe set the wrong init conditions
 
-print(res.x - initParams)
+## FIRST TRY at LMFIT
+
+from lmfit import Parameters, Model
+p = Parameters()
+
+p.add('h11Per', value = 4.88782433, vary=False)
+p.add('h11t0', value = 2454957.812464 - 2454833.0, vary=True)
+p.add('h11Inc', value = 88.99, vary=True)
+p.add('h11ApRs', value = 14.64, vary=True)
+p.add('h11RpRs', value = 0.05856, vary=True)
+p.add('h11Ecc', value = 0.26493, vary=False)
+p.add('h11Omega', value = 360-162.149, vary=False)
+p.add('h11u1', value = 0.646, vary=True)
+p.add('h11u2', value = 0.048, vary=True)
+p.add('intercept', value = 1.0, vary=True)
+p.add('slope', value = 0.0, vary=True)
+p.add('curvature', value = 0.0, vary=True)
+'''
+df = pd.read_csv('w18.csv')
+t = df['time'].values
+orbit = df['orbit'].values
+scanD = df['scanD'].values
+f0 = df['flux0'].values
+fitLCModel(params, times, flux0, scanD, df['weights'].values)
+'''
+lc = Model(batman_wrapper_raw, independent_vars=['times', 'ldtype', 'transitType'])
+
+fitResult = lc.fit(f0,
+                   tExp=tExp,
+                   times=times,
+                   ldtype='quadratic',
+                   transitType='primary',
+                   params=p,
+                   method='powell')
+print(fitResult)
