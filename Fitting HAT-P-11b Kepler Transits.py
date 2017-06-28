@@ -172,11 +172,10 @@ p.add('slope', value = 0.0, vary=True)
 p.add('curvature', value = 0.0, vary=True)
 lc = Model(batman_wrapper_lmfit, independent_vars=['times', 'ldtype', 'transitType'])
 
-fitResult = lc.fit(data,
+fitResult = lc.fit(data,p,
                    times=tSim,
                    ldtype='quadratic',
                    transitType='primary',
-                   params=p,
                    weights=derr**(-2),
                    method='powell')
 
