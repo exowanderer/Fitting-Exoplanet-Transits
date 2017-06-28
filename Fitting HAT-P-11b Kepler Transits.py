@@ -79,7 +79,7 @@ def loglikehood(params, uni_prior, times, flux, fluxerr, regularization=None, la
         return -0.5*chisq.sum()
     elif regularization == 'Ridge':
         return -0.5*chisq.sum() + lam*np.sqrt((params**2).sum())
-    elif regularization = 'LASSO':
+    elif regularization == 'LASSO':
         return -0.5*chisq.sum() + lam*abs(params).sum()
 
 def logPrior(params, uni_prior, times, flux, fluxerr):
