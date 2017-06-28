@@ -142,7 +142,7 @@ uniPrior = np.array([
 
 nPts = 1000
 tSim = np.linspace(h11t0 - 0.2, h11t0 + 0.2, nPts)
-data, derr = generate_fake_transit_data(h11Per, h11t0, h11Inc, h11ApRs, h11RpRs, h11ecc, h11Omega, h11u1, h11u2, 
+data, derr = generate_fake_transit_data(h11Per, h11t0, h11Inc, h11ApRs, h11RpRs, h11Ecc, h11Omega, h11u1, h11u2, 
                                         offset, slope, curvature, tSim, noiseLevel=0.1, 
                                         ldtype='quadratic', transitType='primary')
 
