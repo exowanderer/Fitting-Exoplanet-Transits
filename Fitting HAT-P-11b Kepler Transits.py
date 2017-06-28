@@ -1,5 +1,6 @@
 import numpy as np
 
+# Values from Huber et al 2017 -- Discovered Eclipse of HAT-P-11 inside Kepler Data
 h11Per       = 4.88782433
 h11t0        = 2454957.812464 - 2454833.0
 h11Inc       = 88.99
