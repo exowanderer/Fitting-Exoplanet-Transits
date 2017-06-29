@@ -158,25 +158,27 @@ print(res.x - initParams)
 from lmfit import Parameters, Model
 p = Parameters()
 
-p.add('h11Per', value = 4.88782433, vary=False)
-p.add('h11t0', value = 2454957.812464 - 2454833.0, vary=True)
-p.add('h11Inc', value = 88.99, vary=True)
-p.add('h11ApRs', value = 14.64, vary=True)
-p.add('h11RpRs', value = 0.05856, vary=True)
-p.add('h11Ecc', value = 0.26493, vary=False)
-p.add('h11Omega', value = 360-162.149, vary=False)
-p.add('h11u1', value = 0.646, vary=True)
-p.add('h11u2', value = 0.048, vary=True)
+p.add('h11Per'   , value = 4.88782433, vary=False)
+p.add('h11t0'    , value = 2454957.812464 - 2454833.0, vary=True)
+p.add('h11Inc'   , value = 88.99, vary=True)
+p.add('h11ApRs'  , value = 14.64, vary=True)
+p.add('h11RpRs'  , value = 0.05856, vary=True)
+p.add('h11Ecc'   , value = 0.26493, vary=False)
+p.add('h11Omega' , value = 360-162.149, vary=False)
+p.add('h11u1'    , value = 0.646, vary=True)
+p.add('h11u2'    , value = 0.048, vary=True)
 p.add('intercept', value = 1.0, vary=True)
-p.add('slope', value = 0.0, vary=True)
+p.add('slope'    , value = 0.0, vary=True)
 p.add('curvature', value = 0.0, vary=True)
+
 lc = Model(batman_wrapper_lmfit, independent_vars=['times', 'ldtype', 'transitType'])
 
-fitResult = lc.fit(data,p,
-                   times=tSim,
-                   ldtype='quadratic',
-                   transitType='primary',
-                   weights=derr**(-2),
-                   method='powell')
+fitResult = lc.fit(data        = data,
+                   params      = p,
+                   times       = tSim,
+                   weights     = derr**(-2),
+                   ldtype      = 'quadratic',
+                   transitType = 'primary',
+                   method      = 'powell')
 
 print(fitResult)
