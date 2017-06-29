@@ -1,4 +1,6 @@
 import numpy as np
+inf = np.inf
+
 import batman
 from scipy.optimize import minimize as optmin
 
@@ -13,10 +15,10 @@ h11Omega     = 360-162.149
 h11u1        = 0.646
 h11u2        = 0.048
 
-def generate_fake_transit_data(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2, 
+def generate_fake_transit_data(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, offset, slope, curvature, 
                        times, noiseLevel=None, ldtype='quadratic', transitType='primary'):
   
-  cleanModel = batman_wrapper_lmfit(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2, 
+  cleanModel = batman_wrapper_lmfit(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, offset, slope, curvature, 
                        times, ldtype='quadratic', transitType='primary')
   
   if noiseLevel is None:
@@ -28,12 +30,12 @@ def generate_fake_transit_data(period, tcenter, inc, aprs, rprs, ecc, omega, u1,
 
 def batman_wrapper_mle(params, times, ldtype='quadratic', transitType='primary'):
 
-    period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2 = params
+    period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, slope0, slope, curvature = params
     
-    if p0 == 1.0 and p1 == 0.0 and p2 == 0.0:
+    if offset == 1.0 and slope == 0.0 and curvature == 0.0:
         out_of_transit = 1.0
     else:
-        out_of_transit = p0 + p1*(times - times.mean()) + p2*(times - times.mean())**2.
+        out_of_transit = offset + slope*(times - times.mean()) + curvature*(times - times.mean())**2.
     
     bm_params           = batman.TransitParams() # object to store transit parameters
 
@@ -51,15 +53,15 @@ def batman_wrapper_mle(params, times, ldtype='quadratic', transitType='primary')
 
     return m_eclipse.light_curve(bm_params) * out_of_transit
 
-def batman_wrapper_lmfit(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2, 
+def batman_wrapper_lmfit(period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, offset, slope, curvature, 
                        times, ldtype='quadratic', transitType='primary'):
 
-    # period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, p0, p1, p2 = params
+    # period, tcenter, inc, aprs, rprs, ecc, omega, u1, u2, offset, slope, curvature = params
     
-    if p0 == 1.0 and p1 == 0.0 and p2 == 0.0:
+    if offset == 1.0 and slope == 0.0 and curvature == 0.0:
         out_of_transit = 1.0
     else:
-        out_of_transit = p0 + p1*(times - times.mean()) + p2*(times - times.mean())**2.
+        out_of_transit = offset + slope*(times - times.mean()) + curvature*(times - times.mean())**2.
     
     bm_params           = batman.TransitParams() # object to store transit parameters
 
@@ -140,7 +142,10 @@ uniPrior = np.array([
             [eccIn,eccIn], # uniform volume for ecc
             [omegaIn,omegaIn], # uniform volume for omega
             [0.6,0.7], # uniform volume for u1
-            [0.0,0.1] # uniform volume for u2
+            [0.0,0.1], # uniform volume for u2
+            [-inf,inf],
+            [-inf,inf],
+            [-inf,inf]
            ])
 
 nPts = 1000
@@ -149,7 +154,7 @@ data, derr = generate_fake_transit_data(h11Per, h11t0, h11Inc, h11ApRs, h11RpRs,
                                         offset, slope, curvature, tSim, noiseLevel=0.1, 
                                         ldtype='quadratic', transitType='primary')
 
-res = optmin(neg_logprobability, initParams, args=(uniPrior, tSim, data, derr))
+res = optmin(neg_logprobability, initParams, args=(uniPrior, tSim, data, derr), bounds=uniPrior)
 
 print(res.x - initParams)
 
@@ -158,16 +163,16 @@ print(res.x - initParams)
 from lmfit import Parameters, Model
 p = Parameters()
 
-p.add('h11Per'   , value = 4.88782433, vary=False)
-p.add('h11t0'    , value = 2454957.812464 - 2454833.0, vary=True)
-p.add('h11Inc'   , value = 88.99, vary=True)
-p.add('h11ApRs'  , value = 14.64, vary=True)
-p.add('h11RpRs'  , value = 0.05856, vary=True)
-p.add('h11Ecc'   , value = 0.26493, vary=False)
-p.add('h11Omega' , value = 360-162.149, vary=False)
-p.add('h11u1'    , value = 0.646, vary=True)
-p.add('h11u2'    , value = 0.048, vary=True)
-p.add('intercept', value = 1.0, vary=True)
+p.add('period'   , value = 4.88782433, vary=False)
+p.add('tcenter'    , value = 2454957.812464 - 2454833.0, vary=True)
+p.add('inc'   , value = 88.99, vary=True)
+p.add('aprs'  , value = 14.64, vary=True)
+p.add('rprs'  , value = 0.05856, vary=True)
+p.add('ecc'   , value = 0.26493, vary=False)
+p.add('omega' , value = 360-162.149, vary=False)
+p.add('u1'    , value = 0.646, vary=True)
+p.add('u2'    , value = 0.048, vary=True)
+p.add('offset', value = 1.0, vary=True)
 p.add('slope'    , value = 0.0, vary=True)
 p.add('curvature', value = 0.0, vary=True)
 
@@ -181,4 +186,42 @@ fitResult = lc.fit(data        = data,
                    transitType = 'primary',
                    method      = 'powell')
 
-print(fitResult)
+print(fitResult.best_values)
+
+# from lmfit import minimize, Parameters, Model
+#
+# initialParams = Parameters()
+#
+# initialParams.add_many(
+#     ('period' , kep3period, False),
+#     ('tcenter' , kep3t0, True, kep3t0 - 0.1, kep3t0 + 0.1),
+#     ('inc' , kep3inc, True, 80., 90.),
+#     ('aprs' , kep3aoR, True, 10, 20),
+#     ('rprs' , kep3RpRs, True, 0.01, 0.1),
+#     ('ecc' , kep3ecc, False),
+#     ('omega' , kep3omeg, False),
+#     ('u1' , kep3u1, True, 0.6, 0.7),
+#     ('u2' , kep3u2, True, 0.0, 0.1),
+#     ('offset', 1.0, True),
+#     ('slope', 0.0, True),
+#     ('curvature', 0.0, True))
+#
+# initialParams
+#
+# lc = Model(batman_wrapper_lmfit,
+#               independent_vars = ['times', 'ldtype', 'transitType'])
+#
+# fitResult = lc.fit(fluxSliceK,
+#                    weights     = 1 / ferrSliceK**2.,
+#                    params      = initialParams,
+#                    method      = 'powell',
+#                    times       = timeSliceKmod,
+#                    ldtype      = 'quadratic',
+#                    transitType = 'primary')
+#
+# plt.plot(timeSliceKmod, fluxSliceK,'.')
+# plt.plot(timeSliceKmod, fitResult.best_fit)
+#
+# residuals = fluxSliceK - fitResult.best_fit
+# chisq     = np.sum((residuals / ferrSliceK)**2.)
+# print(chisq / residuals.size)
