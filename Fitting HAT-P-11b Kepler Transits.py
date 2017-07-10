@@ -181,7 +181,7 @@ lc = Model(batman_wrapper_lmfit, independent_vars=['times', 'ldtype', 'transitTy
 fitResult = lc.fit(data        = data,
                    params      = p,
                    times       = tSim,
-                   weights     = derr**(-2),
+                   weights     = 1/derr,
                    ldtype      = 'quadratic',
                    transitType = 'primary',
                    method      = 'powell')
