@@ -15,24 +15,35 @@ def gaussian2D_residuals(params, yy,xx, data):
     """ model decaying sine wave, subtract data"""
     return model - data
 
-# create data to be fitted
-yy,xx = np.indices((50,50))
+# Create True Parameters
 amp   = 10.
 off   = 1.
 ycen  = 19.
 xcen  = 31.
 ywid  = 5.
 xwid  = 7.
-data  = amp2D * np.exp(-0.5*(((yy -ycen)/ywid)**2. + ((xx -xcen)/xwid)**2.))
+
+paramsTrue = Parameters()
+paramsTrue.add('amp', value= amp)
+paramsTrue.add('off', value= off)
+paramsTrue.add('ycen', value= ycen)
+paramsTrue.add('ywid', value= ywid)
+paramsTrue.add('xcen', value= xcen)
+paramsTrue.add('xwid', value= xwid)
+
+nPts  = 50
+yy,xx = np.indices((nPts,nPts))
+data  = gaussian2D(paramsTrue, yy, xx)
+# data  = amp * np.exp(-0.5*(((yy -ycen)/ywid)**2. + ((xx -xcen)/xwid)**2.))
 
 # create a set of Parameters
-params = Parameters()
-params.add('amp', value= 10,  min=0, max=100)
-params.add('off', value= 0,  min=0, max=100)
-params.add('ycen', value= 25., min=0,max=50)
-params.add('ywid', value= 1.0, min=0.0, max=25)
-params.add('xcen', value= 25., min=0,max=50)
-params.add('xwid', value= 1.0, min=0.0, max=25)
+paramsInit = Parameters()
+paramsInit.add('amp', value= 10,  min=0, max=100)
+paramsInit.add('off', value= 0,  min=0, max=100)
+paramsInit.add('ycen', value= 25., min=0,max=50)
+paramsInit.add('ywid', value= 1.0, min=0.0, max=25)
+paramsInit.add('xcen', value= 25., min=0,max=50)
+paramsInit.add('xwid', value= 1.0, min=0.0, max=25)
 
 # do fit, here with leastsq model
 minner = Minimizer(fncMin, params, fcn_args=(x,data))
