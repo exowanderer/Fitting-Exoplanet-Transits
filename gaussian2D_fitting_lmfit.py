@@ -35,9 +35,12 @@ paramsTrue.add('ywid', value=ywid)
 paramsTrue.add('xcen', value=xcen)
 paramsTrue.add('xwid', value=xwid)
 
-nPts  = 50
+np.random.seed(42)
+nPts       = 50
+noiseLevel = 1
+
 yy,xx = np.indices((nPts,nPts))
-data  = gaussian2D(paramsTrue, yy, xx)
+data  = np.random.normal(gaussian2D(paramsTrue, yy, xx), noiseLevel)
 # data  = amp * np.exp(-0.5*(((yy -ycen)/ywid)**2. + ((xx -xcen)/xwid)**2.))
 
 # create a set of Parameters
