@@ -13,6 +13,7 @@ def gaussian2D(params, yy,xx):
 
 def gaussian2D_residuals(params, yy,xx, data):
     """ model decaying sine wave, subtract data"""
+    model = gaussian2D(params, yy, xx)
     return model - data
 
 # Create True Parameters
@@ -39,7 +40,7 @@ data  = gaussian2D(paramsTrue, yy, xx)
 # create a set of Parameters
 paramsInit = Parameters()
 paramsInit.add('amp' , value= 10., min=0.0, max=100)
-paramsInit.add('off' , value= 0,0, min=0.0, max=100)
+paramsInit.add('off' , value= 0.0, min=0.0, max=100)
 paramsInit.add('ycen', value= 25., min=0.0, max=50 )
 paramsInit.add('ywid', value= 1.0, min=0.0, max=25 )
 paramsInit.add('xcen', value= 25., min=0.0, max=50 )
@@ -55,11 +56,13 @@ final = data + result.residual.reshape(data.shape)
 # write error report
 report_fit(result)
 
-bestModel = gaussian2D(results.params, yy, xx)
+bestModel = gaussian2D(result.params, yy, xx)
 
 # try to plot results
+from pylab import figure, subplot, imshow, show
 figure(figsize=(10,20))
-subplot(211)
-imshow(data)
 subplot(121)
+imshow(data)
+subplot(122)
 imshow(bestModel)
+show()
